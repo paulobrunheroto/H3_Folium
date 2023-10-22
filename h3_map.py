@@ -4,6 +4,8 @@ import json
 import h3
 from pyspark.sql.types import DoubleType, StringType
 import pyspark.sql.functions as F
+import branca
+import math
 
 class h3_map():
     def __init__(self, mode = 'pandas'):
@@ -13,7 +15,6 @@ class h3_map():
 
     def to_hex_id(self, df, lat_col, lng_col, resolution=3):
         if self.mode == 'pandas':
-            # df["hex_id"] = df.apply(lambda row: h3.geo_to_h3(row[lat_col], row[lng_col], resolution), axis=1)
             df["hex_id"] = df.apply(lambda row: h3.geo_to_h3(row[lat_col], row[lng_col], resolution), axis=1)
         else:
             spark_hex = F.udf(lambda a,b: h3.geo_to_h3(a, b, resolution), returnType=StringType())
@@ -51,27 +52,35 @@ class h3_map():
             stats = df.select(F.max(df['value']).alias('max'), F.min(df['value']).alias('min'), F.mean(df['value']).alias('mean')).collect()
             return stats[0]['min'], stats[0]['max'], stats[0]['mean']
 
-    def h3_folium_map(self, df_hex, color = 'blue', min_opacity=0.2, max_opacity = 0.7):
+    def h3_folium_map(self, df_hex, steps = None):
         """
         Creates choropleth maps given the aggregated data. initial_map can be an existing map to draw on top of.
         """    
         #colormap
         min_value, max_value, mean_value = self.get_statistics(df_hex)
-        delta = max_value - min_value
-        to_opacity = lambda x: max_opacity if delta==0 else (x-min_value)/delta*(max_opacity-min_opacity)+min_opacity
+        # delta = max_value - min_value
+        # to_opacity = lambda x: max_opacity if delta==0 else (x-min_value)/delta*(max_opacity-min_opacity)+min_opacity
         print(f"Colour column min value {min_value}, max value {max_value}, mean value {mean_value}")
         
         initial_map = folium.Map(location= [47, 4], zoom_start=5.5, tiles="cartodbpositron")
+
+        # colormap = matplotlib.colors.LogNorm(min_value, max_value)
+        colormap = branca.colormap.linear.YlOrRd_09.scale(0, math.ceil(max_value/10)*10)
+        if steps != None:
+            colormap = colormap.to_step(steps)
+        colormap.caption = 'Legenda do gráfico'
+        colormap.add_to(initial_map)
 
         #create geojson data from dataframe
         geojson_data = self.df_to_geojson(df_hex = df_hex)
 
         folium.GeoJson(
             geojson_data,
-            style_function=lambda feature: {
-                'fillColor': color,
+            tooltip=folium.GeoJsonTooltip(fields=['value'], aliases=['count']),
+            style_function = lambda feature: {
+                'fillColor': colormap(feature["properties"]['value']),
                 'weight': 1,
-                'fillOpacity': to_opacity(feature["properties"]['value'])
+                'fillOpacity': 0.3#to_opacity(feature["properties"]['value'])
             }, 
             name = 'hex'
         ).add_to(initial_map)

@@ -9,10 +9,10 @@ while mode not in ['pandas','spark']:
 
 h3 = h3_map(mode=mode)
 
-file = input('Input file name: ')
-resolution = input('Input resolution: ')
-lat = input('Input latitude column name: ')
-long = input('Input longitude column name: ')
+file = 'french_locations.csv'#input('Input file name: ')
+resolution = 4#input('Input resolution: ')
+lat = 'lat'#input('Input latitude column name: ')
+long = 'long'#input('Input longitude column name: ')
 
 start_time = time.time()
 print(f'Process initiated for: {mode}')
