@@ -1,0 +1,7 @@
+{
+    "mode":"spark",
+    "file": "treatedBusDataOnlyRoute.csv",
+    "resolution": 8,
+    "lat_col":"latitude",
+    "long_col":"longitude"
+}
