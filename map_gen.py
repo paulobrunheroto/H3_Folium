@@ -28,7 +28,7 @@ else:
     df_hex = h3.to_hex_id(df, lat_col=lat, lng_col=long, resolution=resolution)
     df_agg = df_hex.groupBy("hex_id").count().withColumnRenamed("count", "value")
 
-map_folium = h3.h3_folium_map(df_agg)
+map_folium = h3.h3_folium_map(df_agg, name = 'Visits')
 map_folium.save("h3_folium.html")
 
 print("--- %s seconds ---" % (time.time() - start_time))

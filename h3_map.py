@@ -70,7 +70,7 @@ class h3_map:
             df_hex.rdd.map(lambda x: json.loads(x["feature"])).collect()
         )
 
-    def h3_folium_map(self, df_hex, steps=None):
+    def h3_folium_map(self, df_hex, steps=None, name = 'hex'):
         """
         Creates choropleth maps given the aggregated data. initial_map can be an existing map to draw on top of.
         """
@@ -94,7 +94,7 @@ class h3_map:
         initial_map = folium.Map(
             location=[np.mean([x[0] for x in points]), np.mean([x[1] for x in points])],
             zoom_start=5.5,
-            tiles="cartodbpositron",
+            tiles = folium.TileLayer("cartodbpositron", name= 'CartoDB Positron')
         )
 
         colormap = branca.colormap.linear.YlOrRd_09.scale(
@@ -102,18 +102,22 @@ class h3_map:
         )
         if steps != None:
             colormap = colormap.to_step(steps)
-        colormap.caption = "Legenda do gráfico"
+        colormap.caption = f"Count of {name}"
         colormap.add_to(initial_map)
 
         folium.GeoJson(
             json.dumps(geojson_data),
-            tooltip=folium.GeoJsonTooltip(fields=["value"], aliases=["count"]),
+            tooltip=folium.GeoJsonTooltip(fields=["value"], aliases=[f"Count of {name}"]),
             style_function=lambda feature: {
                 "fillColor": colormap(feature["properties"]["value"]),
-                "weight": 1,
-                "fillOpacity": 0.3,
+                "weight": 0.2,
+                "fillOpacity": 0.5,
             },
-            name="hex",
+            name=name,
         ).add_to(initial_map)
+        
+        folium.TileLayer('cartodbdark_matter', name='CartoDB Dark Matter').add_to(initial_map)
+        folium.TileLayer('openstreetmap', name='Open Street Map').add_to(initial_map)
+        folium.LayerControl(collapsed=False).add_to(initial_map)
 
         return initial_map

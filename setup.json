@@ -1,7 +1,7 @@
 {
-    "mode":"spark",
-    "file": "treatedBusDataOnlyRoute.csv",
-    "resolution": 8,
-    "lat_col":"latitude",
-    "long_col":"longitude"
+    "mode":"pandas",
+    "file": "french_locations.csv",
+    "resolution": 4,
+    "lat_col":"lat",
+    "long_col":"long"
 }
