@@ -1,6 +1,6 @@
 {
     "mode":"pandas",
-    "file": "french_locations.csv",
+    "file": "input_files/french_locations.csv",
     "resolution": 4,
     "lat_col":"lat",
     "long_col":"long"

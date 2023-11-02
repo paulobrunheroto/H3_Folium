@@ -1,2 +1,3 @@
 start /wait python map_gen.py
-h3_folium.html
+cd output_files
+map_gen.html
