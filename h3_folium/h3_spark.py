@@ -5,8 +5,9 @@ from pyspark.sql.types import DoubleType, StringType
 import pyspark.sql.functions as F
 from h3_folium.h3_map import MapH3
 
+
 class SparkH3(MapH3):
-    def __init__(self, lat_col, long_col, resolution = 3, **kwargs):
+    def __init__(self, lat_col, long_col, resolution=3, **kwargs):
         super().__init__(lat_col, long_col, resolution)
 
     def to_hex_id(self, df):
@@ -40,13 +41,13 @@ class SparkH3(MapH3):
         return FeatureCollection(
             df_hex.rdd.map(lambda x: json.loads(x["feature"])).collect()
         )
-    
-    def map_gen(self, df, file_name='h3_folium'):
+
+    def map_gen(self, df, file_name="h3_folium"):
         df_hex = self.to_hex_id(df)
 
         df_agg = df_hex.groupBy("hex_id").count().withColumnRenamed("count", "value")
 
         geojson_data = self.df_to_geojson(df_agg)
-        map_folium = self.h3_folium_map(geojson_data, name = 'Visits')
+        map_folium = self.h3_folium_map(geojson_data, name="Visits")
         map_folium.save(f"output_files/{file_name}.html")
         return map_folium
